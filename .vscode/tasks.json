@@ -1,0 +1,29 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cppbuild",
+			"label": "Build Lox",
+			"command": "/usr/bin/clang",
+			"args": [
+				"*.c",
+				"-o",
+				"${workspaceFolder}/build/lox"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/src"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": "build",
+			"detail": "compiler: /usr/bin/clang"
+		}, 
+		{
+			"type": "shell",
+			"label": "Run Lox",
+			"command": "${workspaceFolder}/build/lox",
+			"dependsOn": ["Build Lox"]
+		}
+	]
+}
