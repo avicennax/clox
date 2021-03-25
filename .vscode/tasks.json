@@ -25,7 +25,10 @@
 			"label": "Build Lox Tests",
 			"command": "/usr/bin/clang",
 			"args": [
+				"src/lib/*.c",
 				"tests/*.c",
+				"-iquote",
+				"src/lib",
 				"-o",
 				"${workspaceFolder}/build/tests/testLox"
 			],
