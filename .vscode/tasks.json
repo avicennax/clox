@@ -6,7 +6,8 @@
 			"label": "Build Lox",
 			"command": "/usr/bin/clang",
 			"args": [
-				"*.c",
+				"lib/*.c",
+				"main.c",
 				"-o",
 				"${workspaceFolder}/build/lox"
 			],
@@ -18,12 +19,41 @@
 			],
 			"group": "build",
 			"detail": "compiler: /usr/bin/clang"
-		}, 
+		},
+		{
+			"type": "cppbuild",
+			"label": "Build Lox Tests",
+			"command": "/usr/bin/clang",
+			"args": [
+				"tests/*.c",
+				"-o",
+				"${workspaceFolder}/build/tests/testLox"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": "build",
+			"detail": "compiler: /usr/bin/clang"
+		},
+		{
+			"type": "shell",
+			"label": "Run Lox Tests",
+			"command": "${workspaceFolder}/build/tests/testLox",
+			"dependsOn": [
+				"Build Lox Tests"
+			],
+			"problemMatcher": []
+		},
 		{
 			"type": "shell",
 			"label": "Run Lox",
 			"command": "${workspaceFolder}/build/lox",
-			"dependsOn": ["Build Lox"]
+			"dependsOn": [
+				"Build Lox"
+			]
 		}
 	]
 }
