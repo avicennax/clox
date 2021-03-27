@@ -3,6 +3,8 @@
 
 #include "chunk.h"
 
+#define DEBUG(x) fprintf(stderr, x)
+
 void disassembleChunk(Chunk* chunk, const char* name);
 int disassembleInstruction(Chunk* chunk, int offset);
 

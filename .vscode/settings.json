@@ -1,22 +1,14 @@
 {
     "files.associations": {
         "common.h": "c",
-        "__functional_base": "cpp",
-        "__functional_base_03": "cpp",
-        "__hash_table": "cpp",
-        "__tuple": "cpp",
-        "algorithm": "cpp",
-        "array": "cpp",
-        "chrono": "cpp",
-        "type_traits": "cpp",
-        "functional": "cpp",
-        "iterator": "cpp",
-        "limits": "cpp",
-        "memory": "cpp",
-        "ratio": "cpp",
-        "tuple": "cpp",
-        "utility": "cpp",
         "debug.h": "c",
-        "system_error": "cpp"
+        "__bit_reference": "c",
+        "__split_buffer": "c",
+        "string": "c",
+        "vector": "c",
+        "chunk.h": "c",
+        "value.h": "c",
+        "memory.h": "c",
+        "mintest.h": "c"
     }
 }
