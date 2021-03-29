@@ -73,6 +73,7 @@ static void error(const char* message) {
   errorAt(&parser.previous, message);
 }
 
+// Reads a single token and updates the parser
 static void advance() {
   parser.previous = parser.current;
 
@@ -116,6 +117,12 @@ static uint8_t makeConstant(Value value) {
   return (uint8_t)constant;
 }
 
+/*
+When writing out a constant we write two bytes, first the op code 
+for the constant (OP_CONSTANT), and then the index of the constant
+in the chunk's ValueArray (which it is written into inside the
+makeConstant call).
+*/
 static void emitConstant(Value value) {
   emitBytes(OP_CONSTANT, makeConstant(value));
 }
@@ -255,7 +262,7 @@ bool compile(const char* source, Chunk* chunk) {
   parser.hadError = false;
   parser.panicMode = false;
 
-  // Might be better called parse()
+  // Might be better called scan()
   advance();
 
   expression();

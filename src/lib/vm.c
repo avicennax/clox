@@ -28,7 +28,17 @@ Value pop() {
   return *vm.stackTop;
 }
 
+/*
+Worth mentioning here since it wasn't clear to my dumbass,
+the stack and "instruction stack" are seperate entities.
+There isn't really an instruction stack insofar as 
+"chunk" of bytecode instructions. Our VM uses a stack
+to maintain local state while executing these instructions.
+*/
 static InterpretResult run() {
+// What is *vm.ip++ actually doing?
+// It's returning the byte deferenced via *vm.ip
+// and then increments the pointer to the next byte.
 #define READ_BYTE() (*vm.ip++)
 #define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
 #define BINARY_OP(op) \
@@ -86,6 +96,10 @@ InterpretResult interpret(const char* source) {
   }
 
   vm.chunk = &chunk;
+  /*
+  Set our VM instruction pointer (IP) to point
+  to first bytecode instruction in our chunk.
+  */
   vm.ip = vm.chunk->code;
 
   InterpretResult result = run();
