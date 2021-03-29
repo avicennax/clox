@@ -1,3 +1,9 @@
+/**
+ * All the tests for clox are going to live in this one file
+ * for ease of execution. Many of em are pretty shit - but
+ * alot of em are a way for me to better understand C.
+ */
+
 #include "mintest.h"
 #include "memory.h"
 #include "chunk.h"
