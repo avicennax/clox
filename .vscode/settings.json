@@ -9,6 +9,7 @@
         "chunk.h": "c",
         "value.h": "c",
         "memory.h": "c",
-        "mintest.h": "c"
+        "mintest.h": "c",
+        "cstdio": "cpp"
     }
 }

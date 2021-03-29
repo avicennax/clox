@@ -30,7 +30,7 @@
 				"-iquote",
 				"src/lib",
 				"-o",
-				"${workspaceFolder}/build/tests/testLox"
+				"build/tests/testLox"
 			],
 			"options": {
 				"cwd": "${workspaceFolder}"
