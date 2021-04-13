@@ -7,18 +7,21 @@
 #define OBJ_TYPE(value)        (AS_OBJ(value)->type)
 #define IS_STRING(value)       isObjType(value, OBJ_STRING)
 
+#define AS_STRING(value)       ((ObjString*)AS_OBJ(value))
+#define AS_CSTRING(value)      (((ObjString*)AS_OBJ(value))->chars)
+
 typedef enum {
   OBJ_STRING,
 } ObjType;
 
 struct Obj {
   ObjType type;
+  struct Obj* next;
 };
 
 /*
-Note how the first bytes of ObjString exactly line up with Obj. 
-This is not a coincidence—C mandates it. This is designed to enable 
-a clever pattern: You can take a pointer to a struct and safely 
+Note how the first N bytes of ObjString exactly line up with Obj. 
+This enables a clever pattern: you can take a pointer to a struct and safely 
 convert it to a pointer to its first field and back.
 */
 struct ObjString {
@@ -27,7 +30,9 @@ struct ObjString {
   char* chars;
 };
 
+ObjString* takeString(char* chars, int length);
 ObjString* copyString(const char* chars, int length);
+void printObject(Value value);
 
 static inline bool isObjType(Value value, ObjType type) {
   return IS_OBJ(value) && AS_OBJ(value)->type == type;
