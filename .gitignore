@@ -2,3 +2,4 @@ build/lox
 build/libs
 build/tests
 *.o
+*.dSYM
