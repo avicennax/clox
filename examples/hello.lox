@@ -1,5 +1,6 @@
 {
     var h = "hello";
-    var w = "world!";
+    var w;
+    w = "world!";
     print h + " " + w;
 }

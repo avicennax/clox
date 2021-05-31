@@ -125,9 +125,14 @@ static InterpretResult run() {
       case OP_POP: pop(); break;
       case OP_GET_LOCAL: {
         uint8_t slot = READ_BYTE();
-        push(vm.stack[slot]); 
+        push(vm.stack[slot]);
         break;
       }
+      /**
+       * During assignment the RHS gets evaluated to an
+       * expressionStatement and thus the top of the stack here
+       * read via peek(0) gets popped. --FALSE--
+       */
       case OP_SET_LOCAL: {
         uint8_t slot = READ_BYTE();
         vm.stack[slot] = peek(0);
@@ -152,7 +157,7 @@ static InterpretResult run() {
       case OP_SET_GLOBAL: {
         ObjString* name = READ_STRING();
         if (tableSet(&vm.globals, name, peek(0))) {
-          tableDelete(&vm.globals, name); 
+          tableDelete(&vm.globals, name);
           runtimeError("Undefined variable '%s'.", name->chars);
           return INTERPRET_RUNTIME_ERROR;
         }

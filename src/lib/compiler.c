@@ -141,7 +141,7 @@ static uint8_t makeConstant(Value value) {
 }
 
 /*
-When writing out a constant we write two bytes, first the op code 
+When writing out a constant we write two bytes, first the op code
 for the constant (OP_CONSTANT), and then the index of the constant
 in the chunk's ValueArray (which it is written into inside the
 makeConstant call).
@@ -196,7 +196,18 @@ static bool identifiersEqual(Token* a, Token* b) {
   return memcmp(a->start, b->start, a->length) == 0;
 }
 
+/**
+ * This is the meat of local variable access and resolution.
+ * Basically check to see if we can find a local that matches
+ * the name of our variable name symbol. If we can't, then
+ * it's a global.
+ *
+ * @param compiler
+ * @param name
+ * @return int
+ */
 static int resolveLocal(Compiler* compiler, Token* name) {
+  // Start in the current scope and work our way up.
   for (int i = compiler->localCount - 1; i >= 0; i--) {
     Local* local = &compiler->locals[i];
     if (identifiersEqual(name, &local->name)) {
@@ -228,7 +239,7 @@ static void declareVariable() {
   for (int i = current->localCount - 1; i >= 0; i--) {
     Local* local = &current->locals[i];
     if (local->depth != -1 && local->depth < current->scopeDepth) {
-      break; 
+      break;
     }
 
     if (identifiersEqual(name, &local->name)) {
@@ -242,11 +253,11 @@ static void declareVariable() {
 /**
  * We have two cases handled here: locals and globals.
  * For globals we basically auto-return from declareVariable
- * and the work in done in indentifierConstant - the 
+ * and the work in done in indentifierConstant - the
  * opposite being the case for locals.
- * 
- * @param errorMessage 
- * @return uint8_t 
+ *
+ * @param errorMessage
+ * @return uint8_t
  */
 static uint8_t parseVariable(const char* errorMessage) {
   consume(TOKEN_IDENTIFIER, errorMessage);
@@ -316,6 +327,17 @@ static void number(bool canAssign) {
   emitConstant(NUMBER_VAL(value));
 }
 
+  /**
+   * How do we know the index in compiler->locals[i]
+   * that matches our variable will have the same the
+   * index in vm.stack?
+   * - Intermediate values pushed to stack?
+   * - Globals?
+   *
+   * So variables going out of scope will be pushed off the
+   * stack when we endScope() and naturally they're pushed onto
+   * the stack during assignment.
+   */
 static void namedVariable(Token name, bool canAssign) {
   uint8_t getOp, setOp;
   int arg = resolveLocal(current, &name);
@@ -368,7 +390,7 @@ to ints starting from 0 to K-1, where there K values.
 ParseRule rules[] = {
   [TOKEN_LEFT_PAREN]    = {grouping, NULL,   PREC_NONE},
   [TOKEN_RIGHT_PAREN]   = {NULL,     NULL,   PREC_NONE},
-  [TOKEN_LEFT_BRACE]    = {NULL,     NULL,   PREC_NONE}, 
+  [TOKEN_LEFT_BRACE]    = {NULL,     NULL,   PREC_NONE},
   [TOKEN_RIGHT_BRACE]   = {NULL,     NULL,   PREC_NONE},
   [TOKEN_COMMA]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_DOT]           = {NULL,     NULL,   PREC_NONE},
@@ -533,6 +555,6 @@ bool compile(const char* source, Chunk* chunk) {
   }
 
   endCompiler();
-  
+
   return !parser.hadError;
 }
