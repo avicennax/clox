@@ -17,6 +17,17 @@ static Value clockNative(int argCount, Value* args) {
   return NUMBER_VAL((double)clock() / CLOCKS_PER_SEC);
 }
 
+/**
+ * Tasks --
+ * - Create a string that doesn't leak.
+ * - Create an object to wrap it.
+ */
+static Value inputNative(int argCount, Value* args) {
+  char* input;
+  fgets(input);
+  return OBJ_VAL(copyString(input, (int)strlen(input)));
+}
+
 static void resetStack() {
   vm.stackTop = vm.stack;
   vm.frameCount = 0;
@@ -60,6 +71,7 @@ void initVM() {
   initTable(&vm.strings);
 
   defineNative("clock", clockNative);
+  defineNative("input", inputNative);
 }
 
 void freeVM() {
@@ -92,7 +104,7 @@ static bool call(ObjFunction* function, int argCount) {
   if (vm.frameCount == FRAMES_MAX) {
     runtimeError("Stack overflow.");
     return false;
-  }
+  };
 
   CallFrame* frame = &vm.frames[vm.frameCount++];
   frame->function = function;
