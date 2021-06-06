@@ -17,12 +17,17 @@ static Value clockNative(int argCount, Value* args) {
   return NUMBER_VAL((double)clock() / CLOCKS_PER_SEC);
 }
 
+/**
+ * These chars get owned via by the ObjString
+ * instance deferenced by the pointer returned
+ * from takeString. When our objects are cleared
+ * up the char* block gets freed (see: freeObject).
+ */
 static Value inputNative(int argCount, Value* args) {
   char* input = ALLOCATE(char, 256);
   fgets(input, 256, stdin);
   // Strip out newline.
   input[strlen(input)-1] = '\0';
-  // ObjString inputString = *takeString(input, 256);
   return OBJ_VAL(takeString(input, 256));
 }
 
