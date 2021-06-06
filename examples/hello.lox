@@ -1,6 +1,5 @@
-{
-    var h = "hello";
-    var w;
-    w = "world!";
-    print h + " " + w;
+fun hello() {
+    print "hello!";
 }
+
+hello();
