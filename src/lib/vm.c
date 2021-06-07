@@ -22,6 +22,8 @@ static Value clockNative(int argCount, Value* args) {
  * instance deferenced by the pointer returned
  * from takeString. When our objects are cleared
  * up the char* block gets freed (see: freeObject).
+ * Optimization: free unused buffer before passing
+ *  to takeString.
  */
 static Value inputNative(int argCount, Value* args) {
   char* input = ALLOCATE(char, 256);
