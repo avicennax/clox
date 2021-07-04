@@ -110,7 +110,7 @@ static void error(const char* message) {
   errorAt(&parser.previous, message);
 }
 
-// Reads a single token and updates the parser
+// Reads a single token and updates the parser.
 static void advance() {
   parser.previous = parser.current;
 
@@ -118,6 +118,9 @@ static void advance() {
   // we don't encounter an error token.
   forever {
     parser.current = scanToken();
+#ifdef DEBUG_PRINT_CODE
+    printf("(advance) Current Type: %s\n", getTokenName(parser.current.type));
+#endif
     if (parser.current.type != TOKEN_ERROR) break;
 
     errorAtCurrent(parser.current.start);
@@ -555,7 +558,14 @@ ParseRule rules[] = {
 
 // Need to grok this shit.
 static void parsePrecedence(Precedence precedence) {
+#ifdef DEBUG_PRINT_CODE
+  printf("(parsePrecedence) Current Type: %s\n", getTokenName(parser.current.type));
+#endif
   advance();
+#ifdef DEBUG_PRINT_CODE
+  printf("(parsePrecedence) Current Type (after advance): %s\n", getTokenName(parser.current.type));
+  printf("(parsePrecedence) prefixRule Type: %s\n", getTokenName(parser.current.type));
+#endif
   ParseFn prefixRule = getRule(parser.previous.type)->prefix;
   if (prefixRule == NULL) {
     error("Expect expression.");
@@ -814,12 +824,15 @@ ObjFunction* compile(const char* source) {
   // Might be better called scan as this actually
   // kicks off the scanner.
   advance();
-  printf("type: %s\n", source);
 
+  // This first match ensures the first parser.previous
+  // is washed out and our first true scanned token
+  // is set to parser.previous.
   while (!match(TOKEN_EOF)) {
     declaration();
   }
 
+  printf("\n");
   ObjFunction* function = endCompiler();
   return parser.hadError ? NULL : function;
 }
