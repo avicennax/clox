@@ -114,6 +114,8 @@ static void error(const char* message) {
 static void advance() {
   parser.previous = parser.current;
 
+  // This loop is misleading - we basically break any time
+  // we don't encounter an error token.
   forever {
     parser.current = scanToken();
     if (parser.current.type != TOKEN_ERROR) break;
@@ -809,8 +811,10 @@ ObjFunction* compile(const char* source) {
   parser.hadError = false;
   parser.panicMode = false;
 
-  // Might be better called scan()
+  // Might be better called scan as this actually
+  // kicks off the scanner.
   advance();
+  printf("type: %s\n", source);
 
   while (!match(TOKEN_EOF)) {
     declaration();

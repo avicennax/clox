@@ -52,6 +52,17 @@
 		},
 		{
 			"type": "shell",
+			"label": "Run print.lox",
+			"command": "${workspaceFolder}/build/lox",
+			"args": [
+				"${workspaceFolder}/examples/print.lox"
+			],
+			"dependsOn": [
+				"Build Lox"
+			]
+		},
+		{
+			"type": "shell",
 			"label": "Run Lox",
 			"command": "${workspaceFolder}/build/lox",
 			"dependsOn": [
