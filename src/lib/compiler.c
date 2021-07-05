@@ -6,9 +6,10 @@
 #include "compiler.h"
 #include "scanner.h"
 
-#ifdef DEBUG_PRINT_CODE
+#if defined(DEBUG_PRINT_CODE) || defined(DEBUG_PRINT_TOKENS)
 #include "debug.h"
 #endif
+
 
 typedef struct {
   Token current;
@@ -104,7 +105,7 @@ static void advance() {
   // we don't encounter an error token.
   forever {
     parser.current = scanToken();
-#ifdef DEBUG_PRINT_CODE
+#ifdef DEBUG_PRINT_TOKENS
     printf("(advance) Current Type: %s\n", getTokenName(parser.current.type));
 #endif
     if (parser.current.type != TOKEN_ERROR) break;
@@ -380,10 +381,16 @@ static void and_(bool canAssign) {
 
 static void binary(bool canAssign) {
   // Remember the operator.
+#ifdef DEBUG_PRINT_TOKENS
+    printf("(binary) Operator token type: %s\n", getTokenName(parser.previous.type));
+#endif
   TokenType operatorType = parser.previous.type;
 
   // Compile the right operand.
   ParseRule* rule = getRule(operatorType);
+#ifdef DEBUG_PRINT_TOKENS
+    printf("(binary) Calling parsePrecedence with prec: %s\n", getPrecedenceName((Precedence)(rule->precedence + 1)));
+#endif
   parsePrecedence((Precedence)(rule->precedence + 1));
 
   // Emit the operator instruction.
@@ -483,6 +490,9 @@ static void unary(bool canAssign) {
   TokenType operatorType = parser.previous.type;
 
   // Compile the operand.
+#ifdef DEBUG_PRINT_TOKENS
+    printf("(unary) Calling parsePrecedence with prec: %s\n", getPrecedenceName(PREC_UNARY));
+#endif
   parsePrecedence(PREC_UNARY);
 
   // Emit the operator instruction.
@@ -500,6 +510,7 @@ hash-map. Since an enum definition will map it's values
 to ints starting from 0 to K-1, where there K values.
 */
 ParseRule rules[] = {
+  // grouping will recursively call expression.
   [TOKEN_LEFT_PAREN]    = {grouping, call,   PREC_CALL},
   [TOKEN_RIGHT_PAREN]   = {NULL,     NULL,   PREC_NONE},
   [TOKEN_LEFT_BRACE]    = {NULL,     NULL,   PREC_NONE},
@@ -542,15 +553,28 @@ ParseRule rules[] = {
   [TOKEN_EOF]           = {NULL,     NULL,   PREC_NONE},
 };
 
-// Need to grok this shit.
+/**
+ * parsePrecedence is, effectively, only concerned with ensuring 
+ * that we correctly terminate expression evaluation based on precedence.
+ * 
+ * For example, if we have -1 + 2. Then we don't want - to negate (1 + 2) 
+ * which it may happily do with a naive approach. Here TOKEN_MINUS has 
+ * higher precedence than TOKEN_PLUS and so our loop below terminates 
+ * once we encounter this lower precedence operator.
+ * 
+ * Since we only support unary and binary expression operators we only
+ * need consider those cases.
+ * 
+ * @param precedence 
+ */
 static void parsePrecedence(Precedence precedence) {
-#ifdef DEBUG_PRINT_CODE
-  printf("(parsePrecedence) Current Type: %s\n", getTokenName(parser.current.type));
+#ifdef DEBUG_PRINT_TOKENS
+  printf("(parsePrecedence) [1] Current type: %s\n", getTokenName(parser.current.type));
 #endif
   advance();
-#ifdef DEBUG_PRINT_CODE
-  printf("(parsePrecedence) Current Type (after advance): %s\n", getTokenName(parser.current.type));
-  printf("(parsePrecedence) prefixRule Type: %s\n", getTokenName(parser.previous.type));
+#ifdef DEBUG_PRINT_TOKENS
+  printf("(parsePrecedence) [2] Current Type (after advance): %s\n", getTokenName(parser.current.type));
+  printf("(parsePrecedence) [3] prefixRule Type: %s\n", getTokenName(parser.previous.type));
 #endif
   ParseFn prefixRule = getRule(parser.previous.type)->prefix;
   if (prefixRule == NULL) {
@@ -561,16 +585,16 @@ static void parsePrecedence(Precedence precedence) {
   prefixRule(canAssign);
 
   while (precedence <= getRule(parser.current.type)->precedence) {
-#ifdef DEBUG_PRINT_CODE
+#ifdef DEBUG_PRINT_TOKENS
     printf(
-      "(parsePrecedence) %s <= %s - Looping\n", 
+      "(parsePrecedence) [4] %s <= %s - Looping\n", 
       getPrecedenceName(precedence), 
       getPrecedenceName(getRule(parser.current.type)->precedence)
     );
 #endif
     advance();
-#ifdef DEBUG_PRINT_CODE
-    printf("(parsePrecedence) infixRule Type: %s\n", getTokenName(parser.previous.type));
+#ifdef DEBUG_PRINT_TOKENS
+    printf("(parsePrecedence) [5] infixRule Type: %s\n", getTokenName(parser.previous.type));
 #endif
     ParseFn infixRule = getRule(parser.previous.type)->infix;
     infixRule(canAssign);
