@@ -379,6 +379,14 @@ static void and_(bool canAssign) {
   patchJump(endJump);
 }
 
+/**
+ * When binary is called the left-hand operand
+ * has already been compiled. Now we need to compile
+ * the right-hand operand (i.e: expression). To do so,
+ * we call parsePrecedence again to determine.
+ * 
+ * @param canAssign 
+ */
 static void binary(bool canAssign) {
   // Remember the operator.
 #ifdef DEBUG_PRINT_TOKENS
@@ -557,24 +565,23 @@ ParseRule rules[] = {
  * parsePrecedence is, effectively, only concerned with ensuring 
  * that we correctly terminate expression evaluation based on precedence.
  * 
- * For example, if we have -1 + 2. Then we don't want - to negate (1 + 2) 
- * which it may happily do with a naive approach. Here TOKEN_MINUS has 
- * higher precedence than TOKEN_PLUS and so our loop below terminates 
- * once we encounter this lower precedence operator.
- * 
  * Since we only support unary and binary expression operators we only
  * need consider those cases.
+ * 
+ * Per below, we recursively parse an expression until we encounter lower
+ * precedence - at which point the call stack unwinds.
  * 
  * @param precedence 
  */
 static void parsePrecedence(Precedence precedence) {
 #ifdef DEBUG_PRINT_TOKENS
-  printf("(parsePrecedence) [1] Current type: %s\n", getTokenName(parser.current.type));
+  printf("(parsePrecedence) [1] Enter\n");
 #endif
   advance();
 #ifdef DEBUG_PRINT_TOKENS
-  printf("(parsePrecedence) [2] Current Type (after advance): %s\n", getTokenName(parser.current.type));
-  printf("(parsePrecedence) [3] prefixRule Type: %s\n", getTokenName(parser.previous.type));
+  printf("(parsePrecedence) [2] Previous Type: %s\n", getTokenName(parser.previous.type));
+  printf("(parsePrecedence) [3] Current Type: %s\n", getTokenName(parser.current.type));
+  printf("(parsePrecedence) [4] prefixRule Type: %s\n", getTokenName(parser.previous.type));
 #endif
   ParseFn prefixRule = getRule(parser.previous.type)->prefix;
   if (prefixRule == NULL) {
@@ -582,19 +589,52 @@ static void parsePrecedence(Precedence precedence) {
     return;
   }
   bool canAssign = precedence <= PREC_ASSIGNMENT;
+  /**
+   * Unary operators have very high precedence and 
+   * terminate thus we return on pretty anything
+   * except attributes and calls.
+   */
   prefixRule(canAssign);
 
+#ifdef DEBUG_PRINT_TOKENS
+  unsigned int debugLoopCounter = 0;
+  printf(
+    "(parsePrecedence) [5] Evaluating -> %s <= %s\n",
+    getPrecedenceName(precedence), 
+    getPrecedenceName(getRule(parser.current.type)->precedence)
+ );
+#endif
+  /**
+   * Pratt parser is pretty deep IMHO (maybe I'm just an idiot).
+   * Basically this loop will enable us to keep chewing through
+   * tokens until we encounter a token / term with lower precedence.
+   * For example, if we have an expression 2 * 2 * 2 + 3. We'd like
+   * to evaluate (2)^4 but stop at (+ 3). The idea is we recursively
+   * call parsePrecedence inside the infix functions until we hit
+   * an operator who precedence is lower than last operator's prec
+   * (that information is passed in on the parsePrecedence call - 
+   * technically due to implementation it's prec + 1).
+   * 
+   * Another way to think about it is we recursively parse higher
+   * precedence.
+   * 
+   * Note that this descent can be nested, see: 2 * (2 + 3 * 4) + 4. 
+   */
   while (precedence <= getRule(parser.current.type)->precedence) {
 #ifdef DEBUG_PRINT_TOKENS
     printf(
-      "(parsePrecedence) [4] %s <= %s - Looping\n", 
+      "(parsePrecedence) [6](%d) TRUE -- %s <= %s - Looping\n",
+      debugLoopCounter, 
       getPrecedenceName(precedence), 
       getPrecedenceName(getRule(parser.current.type)->precedence)
     );
+    debugLoopCounter++;
 #endif
     advance();
 #ifdef DEBUG_PRINT_TOKENS
-    printf("(parsePrecedence) [5] infixRule Type: %s\n", getTokenName(parser.previous.type));
+    printf("(parsePrecedence) [7] Previous Type: %s\n", getTokenName(parser.previous.type));
+    printf("(parsePrecedence) [8] Current Type: %s\n", getTokenName(parser.current.type));
+    printf("(parsePrecedence) [9] infixRule Type: %s\n", getTokenName(parser.previous.type));
 #endif
     ParseFn infixRule = getRule(parser.previous.type)->infix;
     infixRule(canAssign);
@@ -602,6 +642,9 @@ static void parsePrecedence(Precedence precedence) {
   if (canAssign && match(TOKEN_EQUAL)) {
     error("Invalid assignment target.");
   }
+#ifdef DEBUG_PRINT_TOKENS
+  printf("(parsePrecedence) [10] Exit\n");
+#endif
 }
 
 static ParseRule* getRule(TokenType type) {
