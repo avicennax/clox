@@ -17,20 +17,6 @@ typedef struct {
   bool panicMode;
 } Parser;
 
-typedef enum {
-  PREC_NONE,
-  PREC_ASSIGNMENT,  // =
-  PREC_OR,          // or
-  PREC_AND,         // and
-  PREC_EQUALITY,    // == !=
-  PREC_COMPARISON,  // < > <= >=
-  PREC_TERM,        // + -
-  PREC_FACTOR,      // * /
-  PREC_UNARY,       // ! -
-  PREC_CALL,        // . ()
-  PREC_PRIMARY
-} Precedence;
-
 typedef void (*ParseFn)(bool canAssign);
 
 typedef struct {
@@ -525,8 +511,8 @@ ParseRule rules[] = {
   [TOKEN_SEMICOLON]     = {NULL,     NULL,   PREC_NONE},
   [TOKEN_SLASH]         = {NULL,     binary, PREC_FACTOR},
   [TOKEN_STAR]          = {NULL,     binary, PREC_FACTOR},
-  [TOKEN_BANG]          = {unary,     NULL,   PREC_NONE},
-  [TOKEN_BANG_EQUAL]    = {NULL,     binary,   PREC_NONE},
+  [TOKEN_BANG]          = {unary,     NULL,  PREC_NONE},
+  [TOKEN_BANG_EQUAL]    = {NULL,     binary, PREC_NONE},
   [TOKEN_EQUAL]         = {NULL,     NULL,   PREC_NONE},
   [TOKEN_EQUAL_EQUAL]   = {NULL,     binary, PREC_EQUALITY},
   [TOKEN_GREATER]       = {NULL,     binary, PREC_COMPARISON},
@@ -564,7 +550,7 @@ static void parsePrecedence(Precedence precedence) {
   advance();
 #ifdef DEBUG_PRINT_CODE
   printf("(parsePrecedence) Current Type (after advance): %s\n", getTokenName(parser.current.type));
-  printf("(parsePrecedence) prefixRule Type: %s\n", getTokenName(parser.current.type));
+  printf("(parsePrecedence) prefixRule Type: %s\n", getTokenName(parser.previous.type));
 #endif
   ParseFn prefixRule = getRule(parser.previous.type)->prefix;
   if (prefixRule == NULL) {
@@ -575,7 +561,17 @@ static void parsePrecedence(Precedence precedence) {
   prefixRule(canAssign);
 
   while (precedence <= getRule(parser.current.type)->precedence) {
+#ifdef DEBUG_PRINT_CODE
+    printf(
+      "(parsePrecedence) %s <= %s - Looping\n", 
+      getPrecedenceName(precedence), 
+      getPrecedenceName(getRule(parser.current.type)->precedence)
+    );
+#endif
     advance();
+#ifdef DEBUG_PRINT_CODE
+    printf("(parsePrecedence) infixRule Type: %s\n", getTokenName(parser.previous.type));
+#endif
     ParseFn infixRule = getRule(parser.previous.type)->infix;
     infixRule(canAssign);
   }

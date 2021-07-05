@@ -3,6 +3,7 @@
 
 #include "chunk.h"
 #include "scanner.h"
+#include "compiler.h"
 
 #define DEBUG(x) fprintf(stderr, x)
 
@@ -10,5 +11,6 @@ void disassembleChunk(Chunk* chunk, const char* name);
 int disassembleInstruction(Chunk* chunk, int offset);
 
 const char* getTokenName(TokenType type);
+const char* getPrecedenceName(Precedence prec);
 
 #endif
