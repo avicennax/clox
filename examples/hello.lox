@@ -1,5 +1,7 @@
-fun hello() {
-    print "hello!";
+fun hello(name) {
+    print "Hello " + name;
 }
 
-hello();
+print "Whats your name?";
+var name = input();
+hello(name);
