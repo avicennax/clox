@@ -1,0 +1,3 @@
+var x = "gone";
+x = "yolo";
+print x;

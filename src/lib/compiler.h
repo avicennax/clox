@@ -19,5 +19,6 @@ typedef enum {
 } Precedence;
 
 ObjFunction* compile(const char* source);
+void markCompilerRoots();
 
 #endif
