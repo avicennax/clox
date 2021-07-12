@@ -3,3 +3,4 @@ build/libs
 build/tests
 *.o
 *.dSYM
+settings.json
