@@ -1,6 +1,6 @@
 # CLox
 
-A Lox interpreter written in C.
+Lox compiler/VM written in C.
 
 ----
 
