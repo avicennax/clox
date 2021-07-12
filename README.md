@@ -13,5 +13,5 @@ This setup has build tasks currently configured as VSCode tasks - see .vscode/ f
 
 ## ToDo
 
-* Finish the damn book and interpreter.
 * Add tests for Chapter 14, and all chapters onwards.
+* Add more inline comments and grok stack-machine semantics.
